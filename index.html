@@ -14,9 +14,9 @@
             --bg-card: #ffffff;
             --text-main: #1e293b;
             --text-muted: #64748b;
-            --border-color: #f1f5f9;
-            --input-bg: #ffffff;
-            --input-text: #1e293b;
+            --border-color: #e2e8f0;
+            --input-bg: #f1f5f9;
+            --input-text: #0f172a;
         }
 
         .dark {
@@ -38,37 +38,40 @@
             display: flex;
             flex-direction: column;
             margin: 0;
+            overflow: hidden;
+        }
+
+        /* Perbaikan Kontras Input untuk Mode Siang */
+        input::placeholder {
+            color: #94a3b8;
         }
 
         .device-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.1s ease, background-color 0.3s ease;
             border-radius: 28px;
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
             position: relative;
+            touch-action: pan-y; /* Mengizinkan scroll vertikal asli */
+            -webkit-tap-highlight-color: transparent;
         }
         
         .device-card.active {
             background: #2563eb;
             color: white !important;
             border-color: #2563eb;
-            box-shadow: 0 15px 30px -10px rgba(37, 99, 235, 0.5);
-        }
-
-        #ai-input {
-            background-color: var(--input-bg);
-            color: var(--input-text);
+            box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
         }
 
         .modal-overlay {
             position: fixed;
             inset: 0;
             background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(8px);
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 100;
+            z-index: 1000;
             padding: 20px;
         }
 
@@ -87,7 +90,13 @@
         .ai-input-wrapper {
             background-color: var(--bg-card);
             border: 2px solid var(--border-color);
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+        }
+
+        #ai-input {
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            border: 1px solid var(--border-color);
         }
 
         ::-webkit-scrollbar { width: 0px; }
@@ -96,10 +105,10 @@
 <body class="light">
 
     <!-- Header -->
-    <header class="p-6 pb-4 flex justify-between items-start bg-white dark:bg-slate-900 shadow-sm z-50 transition-colors">
+    <header class="p-6 pb-4 flex justify-between items-start bg-white dark:bg-slate-900 shadow-sm z-50">
         <div>
             <h1 class="text-2xl font-bold">NexHome <span class="text-blue-600">Elite</span></h1>
-            <div id="real-time" class="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5 font-mono uppercase tracking-wider">
+            <div id="real-time" class="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5 font-mono">
                 Memuat waktu...
             </div>
             <div class="flex items-center gap-2 mt-2">
@@ -112,7 +121,7 @@
                 <i class="fas fa-moon" id="dark-icon"></i>
             </button>
             <button onclick="toggleTab('settings')" class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-300">
-                <i class="fas fa-user-shield"></i>
+                <i class="fas fa-cog"></i>
             </button>
         </div>
     </header>
@@ -131,17 +140,17 @@
         <!-- VIEW: AI -->
         <div id="view-ai" class="h-full flex flex-col px-6">
             <div class="flex justify-between items-center mb-2">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Riwayat Percakapan</span>
-                <button onclick="clearChat()" class="text-red-500 text-[10px] font-bold flex items-center gap-1 opacity-70 active:opacity-100">
-                    <i class="fas fa-trash-alt"></i> HAPUS SEMUA
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Percakapan</span>
+                <button onclick="clearChat()" class="text-red-500 text-[10px] font-bold flex items-center gap-1 opacity-70">
+                    <i class="fas fa-trash"></i> HAPUS
                 </button>
             </div>
             <div id="chat-box" class="flex-1 overflow-y-auto space-y-4 pb-40 pt-2"></div>
             
             <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[var(--bg-body)] via-[var(--bg-body)] to-transparent z-50">
-                <div class="ai-input-wrapper rounded-[30px] p-1.5 flex items-center">
-                    <input type="text" id="ai-input" placeholder="Tanya atau perintah saklar..." class="flex-1 bg-transparent px-5 py-3 outline-none text-sm font-medium" onkeypress="if(event.key==='Enter') askAI()">
-                    <button id="btn-ask" onclick="askAI()" class="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all">
+                <div class="ai-input-wrapper rounded-[30px] p-2 flex items-center">
+                    <input type="text" id="ai-input" placeholder="Tanya sesuatu..." class="flex-1 rounded-full px-5 py-3 outline-none text-sm font-semibold transition-all" onkeypress="if(event.key==='Enter') askAI()">
+                    <button id="btn-ask" onclick="askAI()" class="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center ml-2 shadow-lg active:scale-90 transition-transform">
                         <i class="fas fa-paper-plane" id="ai-icon"></i>
                     </button>
                 </div>
@@ -151,54 +160,47 @@
         <!-- VIEW: HOME -->
         <div id="view-home" class="h-full hidden overflow-y-auto px-6 pb-24 grid grid-cols-2 gap-4 pt-2"></div>
 
-        <!-- VIEW: SETTINGS (General) -->
+        <!-- VIEW: SETTINGS -->
         <div id="view-settings" class="h-full hidden p-8 space-y-6 bg-white dark:bg-slate-900 overflow-y-auto">
             <div class="flex justify-between items-center">
-                <h2 class="font-bold text-xl">Koneksi Blynk</h2>
-                <button onclick="toggleTab('ai')" class="text-slate-400"><i class="fas fa-times text-xl"></i></button>
+                <h2 class="font-bold text-xl">Pengaturan Awan</h2>
+                <button onclick="toggleTab('ai')" class="text-slate-400"><i class="fas fa-times"></i></button>
             </div>
             <div class="space-y-4">
                 <div class="bg-slate-50 dark:bg-slate-800 p-5 rounded-3xl border border-slate-100 dark:border-slate-700">
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Blynk Auth Token</label>
-                    <input type="text" id="cfg-token" class="w-full mt-2 p-3 bg-white dark:bg-slate-700 rounded-xl border-none text-xs font-mono shadow-sm" value="qS2dyzw-3-Iy8HZEcRQKO8epbb0AbEl8">
+                    <input type="password" id="cfg-token" placeholder="Masukkan Token Blynk" class="w-full mt-2 p-4 bg-white dark:bg-slate-700 rounded-2xl border-none text-xs font-mono shadow-sm">
                 </div>
-                <button onclick="saveSettings()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg">Terapkan Perubahan</button>
+                <div class="bg-slate-50 dark:bg-slate-800 p-5 rounded-3xl border border-slate-100 dark:border-slate-700">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gemini AI Key</label>
+                    <input type="password" id="cfg-ai-key" placeholder="Masukkan Gemini API Key" class="w-full mt-2 p-4 bg-white dark:bg-slate-700 rounded-2xl border-none text-xs font-mono shadow-sm">
+                    <p class="text-[9px] mt-2 text-red-500 font-bold">* Jangan simpan key ini di kode sumber GitHub!</p>
+                </div>
+                <button onclick="saveGlobalSettings()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform">Simpan Pengaturan</button>
             </div>
         </div>
     </main>
 
-    <!-- MODAL: PENGATURAN PERANGKAT (Unified Rename & Schedule) -->
+    <!-- MODAL: DEVICE CONFIG -->
     <div id="modal-device" class="modal-overlay">
-        <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-[32px] p-8 shadow-2xl overflow-hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="font-bold text-lg">Setelan Saklar</h3>
-                <span id="dev-vpin-badge" class="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full text-[10px] font-black">V2</span>
-            </div>
-            
+        <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-[32px] p-8 shadow-2xl">
+            <h3 class="font-bold text-lg mb-6">Setelan Saklar</h3>
             <div class="space-y-5">
-                <!-- Nama Bagian -->
                 <div class="space-y-2">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nama Perangkat</label>
-                    <input type="text" id="dev-name-input" class="w-full p-4 bg-slate-50 dark:bg-slate-700 rounded-2xl border-none outline-none font-bold text-sm">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Nama Perangkat</label>
+                    <input type="text" id="dev-name-input" class="w-full p-4 bg-slate-50 dark:bg-slate-700 rounded-2xl border-none font-bold text-sm">
                 </div>
-
-                <!-- Jadwal Bagian -->
-                <div class="space-y-3 pt-2">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Penjadwalan Otomatis</label>
-                    
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-slate-50 dark:bg-slate-700 p-3 rounded-2xl">
-                            <span class="text-[9px] block mb-1 text-slate-400 font-bold">WAKTU HIDUP</span>
-                            <input type="time" id="dev-time-on" class="bg-transparent border-none outline-none font-bold text-sm w-full">
-                        </div>
-                        <div class="bg-slate-50 dark:bg-slate-700 p-3 rounded-2xl">
-                            <span class="text-[9px] block mb-1 text-slate-400 font-bold">WAKTU MATI</span>
-                            <input type="time" id="dev-time-off" class="bg-transparent border-none outline-none font-bold text-sm w-full">
-                        </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-2xl">
+                        <span class="text-[9px] block mb-1 text-slate-400 font-bold uppercase">Jadwal On</span>
+                        <input type="time" id="dev-time-on" class="bg-transparent border-none outline-none font-bold text-sm w-full">
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-2xl">
+                        <span class="text-[9px] block mb-1 text-slate-400 font-bold uppercase">Jadwal Off</span>
+                        <input type="time" id="dev-time-off" class="bg-transparent border-none outline-none font-bold text-sm w-full">
                     </div>
                 </div>
             </div>
-
             <div class="flex gap-3 mt-8">
                 <button onclick="closeModal('modal-device')" class="flex-1 py-4 text-slate-400 font-bold text-sm">Batal</button>
                 <button onclick="saveDeviceConfig()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold text-sm shadow-lg">Simpan</button>
@@ -207,11 +209,11 @@
     </div>
 
     <script>
-        // --- DATA & STATE ---
-        let blynkToken = localStorage.getItem('nexhome_blynk_token') || "qS2dyzw-3-Iy8HZEcRQKO8epbb0AbEl8";
-        const apiKey = ""; // API Key otomatis terisi oleh environment
-
-        let devices = JSON.parse(localStorage.getItem('nexhome_v5_devices')) || [
+        // --- DATA & PERSISTENCE ---
+        let blynkToken = localStorage.getItem('nex_token') || "";
+        let geminiKey = localStorage.getItem('nex_key') || "";
+        
+        let devices = JSON.parse(localStorage.getItem('nex_devs')) || [
             { id: 0, vPin: "V2", name: "Lampu Teras", icon: "fa-lightbulb", state: 0, schedOn: "", schedOff: "" },
             { id: 1, vPin: "V3", name: "Lampu Tengah", icon: "fa-couch", state: 0, schedOn: "", schedOff: "" },
             { id: 2, vPin: "V4", name: "Lampu Kamar", icon: "fa-bed", state: 0, schedOn: "", schedOff: "" },
@@ -222,27 +224,22 @@
             { id: 7, vPin: "V9", name: "AC Rumah", icon: "fa-snowflake", state: 0, schedOn: "", schedOff: "" }
         ];
 
-        let chatHistory = JSON.parse(localStorage.getItem('nexhome_chat_history')) || [];
-        let isDarkMode = localStorage.getItem('nexhome_dark_mode') === 'true';
-        let activeDeviceId = null;
+        let chatHistory = JSON.parse(localStorage.getItem('nex_chat')) || [];
+        let isDarkMode = localStorage.getItem('nex_dark') === 'true';
+        let activeDevId = null;
 
         // --- CLOCK & SCHEDULER ---
         function updateClock() {
             const now = new Date();
-            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-            
             const timeStr = now.toLocaleTimeString('id-ID', { hour12: false });
-            const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
-            
+            const dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short' }).toUpperCase();
             document.getElementById('real-time').innerText = `${dateStr} • ${timeStr}`;
 
-            // Check Scheduler every minute
             if (now.getSeconds() === 0) {
-                const currentHm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                const hm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
                 devices.forEach(d => {
-                    if (d.schedOn === currentHm) triggerDevice(d, 1);
-                    if (d.schedOff === currentHm) triggerDevice(d, 0);
+                    if (d.schedOn === hm) triggerDevice(d, 1);
+                    if (d.schedOff === hm) triggerDevice(d, 0);
                 });
             }
         }
@@ -251,18 +248,13 @@
         // --- THEME ---
         function toggleDarkMode() {
             isDarkMode = !isDarkMode;
-            localStorage.setItem('nexhome_dark_mode', isDarkMode);
+            localStorage.setItem('nex_dark', isDarkMode);
             applyTheme();
         }
 
         function applyTheme() {
-            if (isDarkMode) {
-                document.body.classList.add('dark');
-                document.getElementById('dark-icon').className = 'fas fa-sun';
-            } else {
-                document.body.classList.remove('dark');
-                document.getElementById('dark-icon').className = 'fas fa-moon';
-            }
+            document.body.classList.toggle('dark', isDarkMode);
+            document.getElementById('dark-icon').className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
         }
 
         // --- NAVIGATION ---
@@ -278,23 +270,49 @@
                 }
             });
             if(tab === 'home') render();
+            if(tab === 'settings') {
+                document.getElementById('cfg-token').value = blynkToken;
+                document.getElementById('cfg-ai-key').value = geminiKey;
+            }
         }
 
-        // --- RENDER HOME ---
+        // --- RENDER & SCROLL PROTECTION ---
+        let startY = 0;
+        let isMoving = false;
+
         function render() {
             const container = document.getElementById('view-home');
             container.innerHTML = '';
             devices.forEach(d => {
                 const card = document.createElement('div');
                 card.className = `device-card p-6 h-48 flex flex-col justify-between ${d.state ? 'active' : ''}`;
-                card.onclick = () => toggleDevice(d);
                 
+                // Logika Scroll vs Klik
+                card.addEventListener('touchstart', (e) => {
+                    startY = e.touches[0].clientY;
+                    isMoving = false;
+                }, {passive: true});
+
+                card.addEventListener('touchmove', (e) => {
+                    const currentY = e.touches[0].clientY;
+                    if (Math.abs(startY - currentY) > 15) isMoving = true;
+                }, {passive: true});
+
+                card.addEventListener('touchend', (e) => {
+                    if (!isMoving) toggleDevice(d);
+                });
+
+                // Support Mouse untuk Testing di PC
+                card.onclick = (e) => {
+                    if (e.pointerType === 'mouse') toggleDevice(d);
+                };
+
                 card.innerHTML = `
                     <div class="flex justify-between items-start">
                         <div class="w-12 h-12 rounded-2xl flex items-center justify-center ${d.state ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-800'}">
                             <i class="fas ${d.icon} text-xl"></i>
                         </div>
-                        <button onclick="openDeviceSettings(${d.id}); event.stopPropagation();" class="w-10 h-10 rounded-full flex items-center justify-center bg-black/5 dark:bg-white/5">
+                        <button onclick="openDevSet(${d.id}); event.stopPropagation();" class="w-10 h-10 rounded-full flex items-center justify-center bg-black/5 dark:bg-white/5 active:scale-90">
                             <i class="fas fa-ellipsis-v text-[12px] opacity-60"></i>
                         </button>
                     </div>
@@ -311,33 +329,28 @@
         }
 
         // --- BLYNK LOGIC ---
-        async function toggleDevice(dev) {
-            const newVal = dev.state ? 0 : 1;
-            triggerDevice(dev, newVal);
-        }
-
         async function triggerDevice(dev, val) {
             dev.state = val;
-            render(); 
+            render();
+            if(!blynkToken) return;
             try {
                 await fetch(`https://blynk.cloud/external/api/update?token=${blynkToken}&${dev.vPin}=${val}`, { mode: 'no-cors' });
             } catch(e) {}
         }
 
-        async function syncServer() {
+        function toggleDevice(dev) {
+            triggerDevice(dev, dev.state ? 0 : 1);
+        }
+
+        async function syncStatus() {
+            if(!blynkToken) return;
             try {
                 const pins = devices.map(d => d.vPin).join('&');
                 const res = await fetch(`https://blynk.cloud/external/api/get?token=${blynkToken}&${pins}`);
                 if(res.ok) {
-                    const status = await res.json();
-                    let changed = false;
-                    devices.forEach(d => {
-                        if(status[d.vPin] !== undefined && d.state !== parseInt(status[d.vPin])) {
-                            d.state = parseInt(status[d.vPin]);
-                            changed = true;
-                        }
-                    });
-                    if(changed) render();
+                    const data = await res.json();
+                    devices.forEach(d => { if(data[d.vPin] !== undefined) d.state = parseInt(data[d.vPin]); });
+                    render();
                     updateBadge(true);
                 }
             } catch(e) { updateBadge(false); }
@@ -348,44 +361,39 @@
             document.getElementById('status-text').innerText = on ? "ONLINE" : "OFFLINE";
         }
 
-        // --- DEVICE MODAL LOGIC ---
-        function openDeviceSettings(id) {
-            activeDeviceId = id;
-            const dev = devices.find(d => d.id === id);
-            document.getElementById('dev-vpin-badge').innerText = dev.vPin;
-            document.getElementById('dev-name-input').value = dev.name;
-            document.getElementById('dev-time-on').value = dev.schedOn || "";
-            document.getElementById('dev-time-off').value = dev.schedOff || "";
+        // --- SETTINGS LOGIC ---
+        function openDevSet(id) {
+            activeDevId = id;
+            const d = devices.find(x => x.id === id);
+            document.getElementById('dev-name-input').value = d.name;
+            document.getElementById('dev-time-on').value = d.schedOn;
+            document.getElementById('dev-time-off').value = d.schedOff;
             document.getElementById('modal-device').style.display = 'flex';
         }
 
         function saveDeviceConfig() {
-            const name = document.getElementById('dev-name-input').value.trim();
+            const name = document.getElementById('dev-name-input').value;
             const tOn = document.getElementById('dev-time-on').value;
             const tOff = document.getElementById('dev-time-off').value;
+            devices = devices.map(d => d.id === activeDevId ? {...d, name, schedOn: tOn, schedOff: tOff} : d);
+            localStorage.setItem('nex_devs', JSON.stringify(devices));
+            render();
+            closeModal('modal-device');
+        }
 
-            if (name) {
-                devices = devices.map(d => d.id === activeDeviceId ? 
-                    {...d, name: name, schedOn: tOn, schedOff: tOff} : d);
-                localStorage.setItem('nexhome_v5_devices', JSON.stringify(devices));
-                render();
-                closeModal('modal-device');
-            }
+        function saveGlobalSettings() {
+            blynkToken = document.getElementById('cfg-token').value.trim();
+            geminiKey = document.getElementById('cfg-ai-key').value.trim();
+            localStorage.setItem('nex_token', blynkToken);
+            localStorage.setItem('nex_key', geminiKey);
+            addChatBubble('ai', "Pengaturan diperbarui. Mencoba sinkronisasi...");
+            syncStatus();
+            toggleTab('ai');
         }
 
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        // --- CHAT SYSTEM ---
-        function loadChatHistory() {
-            const box = document.getElementById('chat-box');
-            box.innerHTML = '';
-            if(chatHistory.length === 0) {
-                addChatBubble('ai', "Selamat datang Masdar. Saya siap membantu mengontrol rumah Anda.", false);
-            } else {
-                chatHistory.forEach(item => addChatBubble(item.role, item.text, false));
-            }
-        }
-
+        // --- CHAT & AI ---
         function addChatBubble(role, text, save = true) {
             const box = document.getElementById('chat-box');
             const div = document.createElement('div');
@@ -393,122 +401,68 @@
             div.innerText = text;
             box.appendChild(div);
             box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
-            
             if(save) {
                 chatHistory.push({ role, text });
-                localStorage.setItem('nexhome_chat_history', JSON.stringify(chatHistory));
+                localStorage.setItem('nex_chat', JSON.stringify(chatHistory));
+            }
+        }
+
+        async function askAI() {
+            const input = document.getElementById('ai-input');
+            const query = input.value.trim();
+            if(!query) return;
+            if(!geminiKey) {
+                addChatBubble('ai', "Maaf, API Key Gemini belum diisi. Masukkan di menu Pengaturan (ikon gir).");
+                return;
+            }
+
+            addChatBubble('user', query);
+            input.value = '';
+            
+            const sys = `Kamu NexHome AI. Kontrol Saklar: ${devices.map(d => `${d.name} (${d.vPin})`).join(', ')}. Format JSON jika kontrol: [{"pin": "VPIN", "val": 0/1}]. Balas ramah, singkat, Bahasa Indonesia.`;
+
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${geminiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: query }] }],
+                        systemInstruction: { parts: [{ text: sys }] }
+                    })
+                });
+                const data = await res.json();
+                const aiMsg = data.candidates?.[0]?.content?.parts?.[0]?.text || "Gagal menghubungi AI.";
+                
+                const match = aiMsg.match(/\[\s*{.*?}\s*\]/gs);
+                if(match) {
+                    const cmds = JSON.parse(match[0]);
+                    cmds.forEach(c => {
+                        const d = devices.find(x => x.vPin === c.pin);
+                        if(d) triggerDevice(d, c.val);
+                    });
+                }
+                addChatBubble('ai', aiMsg.replace(/\[\s*{.*?}\s*\]/gs, '').trim() || "Perintah dijalankan.");
+            } catch(e) {
+                addChatBubble('ai', "Koneksi ke AI gagal. Periksa kembali API Key Anda.");
             }
         }
 
         function clearChat() {
             chatHistory = [];
-            localStorage.removeItem('nexhome_chat_history');
-            loadChatHistory();
-        }
-
-        // --- AI ENGINE (GEMINI) ---
-        async function askAI() {
-            const input = document.getElementById('ai-input');
-            const btn = document.getElementById('btn-ask');
-            const icon = document.getElementById('ai-icon');
-            const query = input.value.trim();
-            if(!query) return;
-
-            addChatBubble('user', query);
-            input.value = '';
-            btn.disabled = true;
-            btn.classList.add('opacity-50');
-            icon.className = "fas fa-spinner fa-spin";
-
-            const sysPrompt = `Kamu NexHome AI. Kontrol Saklar: ${devices.map(d => `${d.name} (${d.vPin})`).join(', ')}. Jika pengguna ingin mengontrol, berikan respon dalam format JSON di akhir kalimat: [{"pin": "VPIN", "val": 0/1}]. Balas ramah, singkat, Bahasa Indonesia.`;
-
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: query }] }],
-                        systemInstruction: { parts: [{ text: sysPrompt }] }
-                    })
-                });
-
-                const data = await response.json();
-                const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, ada gangguan koneksi.";
-
-                const jsonMatch = aiResponse.match(/\[\s*{.*?}\s*\]/gs);
-                if(jsonMatch) {
-                    const commands = JSON.parse(jsonMatch[0]);
-                    commands.forEach(cmd => {
-                        const dev = devices.find(d => d.vPin === cmd.pin);
-                        if(dev) triggerDevice(dev, cmd.val);
-                    });
-                }
-
-                const cleanText = aiResponse.replace(/\[\s*{.*?}\s*\]/gs, '').trim();
-                addChatBubble('ai', cleanText || "Perintah dijalankan.");
-                speak(cleanText);
-            } catch(e) {
-                addChatBubble('ai', "Maaf Masdar, terjadi kesalahan pada sistem AI.");
-            } finally {
-                btn.disabled = false;
-                btn.classList.remove('opacity-50');
-                icon.className = "fas fa-paper-plane";
-            }
-        }
-
-        // --- TTS ---
-        async function speak(text) {
-            if (!text) return;
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: text }] }],
-                        generationConfig: { 
-                            responseModalities: ["AUDIO"], 
-                            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Aoede" } } } 
-                        }
-                    })
-                });
-                const res = await response.json();
-                const b64 = res.candidates[0].content.parts[0].inlineData.data;
-                const audio = new Audio("data:audio/wav;base64," + await pcmToWavB64(b64));
-                audio.play();
-            } catch(e) {}
-        }
-
-        async function pcmToWavB64(b64) {
-            const bin = atob(b64);
-            const len = bin.length;
-            const buf = new ArrayBuffer(44 + len);
-            const view = new DataView(buf);
-            const s = (o, str) => { for(let i=0; i<str.length; i++) view.setUint8(o+i, str.charCodeAt(i)); };
-            s(0, 'RIFF'); view.setUint32(4, 36 + len, true);
-            s(8, 'WAVE'); s(12, 'fmt '); view.setUint32(16, 16, true);
-            view.setUint16(20, 1, true); view.setUint16(22, 1, true);
-            view.setUint32(24, 24000, true); view.setUint32(28, 48000, true);
-            view.setUint16(32, 2, true); view.setUint16(34, 16, true);
-            s(36, 'data'); view.setUint32(40, len, true);
-            for(let i=0; i<len; i++) view.setUint8(44+i, bin.charCodeAt(i));
-            return btoa(String.fromCharCode(...new Uint8Array(buf)));
-        }
-
-        function saveSettings() {
-            blynkToken = document.getElementById('cfg-token').value;
-            localStorage.setItem('nexhome_blynk_token', blynkToken);
-            toggleTab('ai');
-            syncServer();
+            localStorage.removeItem('nex_chat');
+            document.getElementById('chat-box').innerHTML = '';
+            addChatBubble('ai', "Riwayat dibersihkan.", false);
         }
 
         // --- INITIALIZE ---
         window.onload = () => {
             applyTheme();
             updateClock();
-            loadChatHistory();
+            chatHistory.forEach(c => addChatBubble(c.role, c.text, false));
+            if(chatHistory.length === 0) addChatBubble('ai', "Halo Masdar! Pastikan API Key dan Blynk Token sudah terisi di menu Pengaturan ya.", false);
             toggleTab('ai');
-            syncServer();
-            setInterval(syncServer, 5000);
+            syncStatus();
+            setInterval(syncStatus, 10000);
         };
     </script>
 </body>
