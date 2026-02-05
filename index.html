@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>NexHome V5 Elite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -12,14 +12,18 @@
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background-color: #f8fafc; 
-            overscroll-behavior: contain;
+            overscroll-behavior: none;
             user-select: none;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .device-card {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 28px;
             position: relative;
+            overflow: hidden;
         }
         
         .device-card.active {
@@ -40,7 +44,7 @@
             display: none;
             position: fixed;
             inset: 0;
-            z-index: 100;
+            z-index: 1000;
             align-items: center;
             justify-content: center;
             padding: 20px;
@@ -50,75 +54,89 @@
         .chat-bubble-ai { border-radius: 24px 24px 24px 4px; background: white; border: 1px solid #f1f5f9; }
         .chat-bubble-user { border-radius: 24px 24px 4px 24px; background: #2563eb; color: white; }
         
+        /* Glassmorphism for AI Input Container */
+        .ai-input-container {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(241, 245, 249, 1);
+            padding-bottom: env(safe-area-inset-bottom, 16px);
+        }
+
         ::-webkit-scrollbar { width: 0px; background: transparent; }
     </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden">
+<body>
 
     <!-- Header -->
-    <header class="p-6 pb-2 flex justify-between items-center bg-white/50 backdrop-blur-md">
+    <header class="p-6 pb-2 flex justify-between items-center bg-white">
         <div>
-            <h1 class="text-2xl font-bold text-slate-800">NexHome V5 <span class="text-blue-600">Elite</span></h1>
+            <h1 class="text-2xl font-bold text-slate-800">NexHome <span class="text-blue-600">Elite</span></h1>
             <div class="flex items-center gap-2 mt-1">
-                <div id="status-dot" class="w-2.5 h-2.5 rounded-full bg-red-500"></div>
-                <span id="status-text" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Menyambungkan...</span>
+                <div id="status-dot" class="w-2 h-2 rounded-full bg-red-500"></div>
+                <span id="status-text" class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">OFFLINE</span>
             </div>
         </div>
-        <button onclick="toggleTab('settings')" class="w-10 h-10 rounded-full bg-white shadow-sm border border-slate-100 flex items-center justify-center text-slate-400 active:scale-90">
-            <i class="fas fa-sliders-h"></i>
+        <button onclick="toggleTab('settings')" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
+            <i class="fas fa-cog"></i>
         </button>
     </header>
 
-    <!-- Nav -->
-    <div class="px-6 mt-4 flex bg-slate-200/50 p-1 rounded-2xl mx-6">
-        <button id="btn-home" onclick="toggleTab('home')" class="flex-1 py-2.5 text-[11px] font-bold rounded-xl bg-white shadow-sm text-blue-600 transition-all">KONTROL</button>
-        <button id="btn-ai" onclick="toggleTab('ai')" class="flex-1 py-2.5 text-[11px] font-bold rounded-xl text-slate-500 transition-all">ASISTEN AI</button>
+    <!-- Navigation Tabs -->
+    <div class="px-6 my-4">
+        <div class="flex bg-slate-100 p-1.5 rounded-2xl">
+            <button id="btn-ai" onclick="toggleTab('ai')" class="flex-1 py-3 text-[11px] font-bold rounded-xl transition-all">ASISTEN AI</button>
+            <button id="btn-home" onclick="toggleTab('home')" class="flex-1 py-3 text-[11px] font-bold rounded-xl transition-all">KONTROL RUMAH</button>
+        </div>
     </div>
 
-    <!-- Main -->
-    <main class="flex-1 relative overflow-hidden mt-2">
+    <!-- Main Content Area -->
+    <main class="flex-1 relative overflow-hidden">
         
-        <!-- VIEW: HOME -->
-        <div id="view-home" class="h-full overflow-y-auto px-6 pb-32 grid grid-cols-2 gap-4 pt-4">
-            <!-- Rendered via JS -->
-        </div>
-
-        <!-- VIEW: AI -->
-        <div id="view-ai" class="h-full hidden flex flex-col px-6">
-            <div id="chat-box" class="flex-1 overflow-y-auto space-y-4 pb-44 pt-4">
+        <!-- VIEW: AI (Lalai/Default) -->
+        <div id="view-ai" class="h-full flex flex-col px-6">
+            <div id="chat-box" class="flex-1 overflow-y-auto space-y-4 pb-32 pt-2">
                 <div class="chat-bubble-ai p-5 text-sm shadow-sm leading-relaxed text-slate-600">
-                    Selamat datang kembali, Masdar. Saya siap membantu mengontrol 8 perangkat Anda. Mau menyalakan apa hari ini?
+                    Halo Masdar! Saya Asisten NexHome. Ada yang bisa saya bantu dengan perangkat rumah anda?
                 </div>
             </div>
             
-            <div class="absolute bottom-10 left-6 right-6">
-                <div class="bg-white border-2 border-slate-100 rounded-[32px] p-2 flex shadow-2xl items-center">
-                    <input type="text" id="ai-input" placeholder="Matikan lampu dapur..." class="flex-1 bg-transparent px-5 py-3 outline-none text-sm text-slate-700">
-                    <button onclick="askAI()" class="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg shadow-blue-200 active:scale-90">
+            <!-- AI Input Box - Fixed at bottom of the main area -->
+            <div class="absolute bottom-0 left-0 right-0 p-6 ai-input-container">
+                <div class="bg-white border-2 border-slate-100 rounded-[28px] p-1.5 flex shadow-xl items-center">
+                    <input type="text" id="ai-input" placeholder="Tanya sesuatu..." class="flex-1 bg-transparent px-5 py-3 outline-none text-sm text-slate-700" onkeypress="if(event.key==='Enter') askAI()">
+                    <button onclick="askAI()" class="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
             </div>
         </div>
 
+        <!-- VIEW: HOME -->
+        <div id="view-home" class="h-full hidden overflow-y-auto px-6 pb-20 grid grid-cols-2 gap-4 pt-2">
+            <!-- Rendered via JS -->
+        </div>
+
         <!-- VIEW: SETTINGS -->
-        <div id="view-settings" class="h-full hidden p-8 space-y-6">
-            <h2 class="font-bold text-xl text-slate-800">Pengaturan Koneksi</h2>
+        <div id="view-settings" class="h-full hidden p-8 space-y-6 bg-white rounded-t-[40px] shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h2 class="font-bold text-xl text-slate-800">Pengaturan</h2>
+                <button onclick="toggleTab('ai')" class="text-slate-400"><i class="fas fa-times text-xl"></i></button>
+            </div>
             <div class="space-y-4">
-                <div class="bg-white p-4 rounded-3xl border border-slate-100">
+                <div class="bg-slate-50 p-4 rounded-3xl">
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Blynk Auth Token</label>
-                    <input type="text" id="cfg-token" class="w-full mt-2 p-3 bg-slate-50 rounded-xl border-none text-xs font-mono" value="qS2dyzw-3-Iy8HZEcRQKO8epbb0AbEl8">
+                    <input type="text" id="cfg-token" class="w-full mt-2 p-3 bg-white rounded-xl border-none text-xs font-mono shadow-sm" value="qS2dyzw-3-Iy8HZEcRQKO8epbb0AbEl8">
                 </div>
-                <button onclick="saveSettings()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold shadow-xl active:scale-95">Simpan Perubahan</button>
+                <button onclick="saveSettings()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg">Simpan & Hubungkan</button>
             </div>
         </div>
     </main>
 
     <!-- RENAME MODAL -->
     <div id="modal-rename" class="modal-overlay">
-        <div class="bg-white w-full max-w-xs rounded-[32px] p-8 shadow-2xl">
-            <h3 class="font-bold text-slate-800 mb-2">Ganti Nama Saklar</h3>
-            <p class="text-[10px] text-slate-400 mb-6 uppercase tracking-wider font-bold">Pin: <span id="rename-pin">V2</span></p>
+        <div class="bg-white w-full max-w-xs rounded-[32px] p-8 shadow-2xl animate-in zoom-in duration-200">
+            <h3 class="font-bold text-slate-800 mb-2">Ganti Nama</h3>
+            <p class="text-[10px] text-slate-400 mb-6 font-bold uppercase tracking-widest">Pin Perangkat: <span id="rename-pin" class="text-blue-600">V2</span></p>
             <input type="text" id="rename-input" class="w-full p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 outline-none focus:border-blue-500 font-bold text-slate-700 mb-6">
             <div class="flex gap-3">
                 <button onclick="closeModal('modal-rename')" class="flex-1 py-4 text-slate-400 font-bold text-sm">Batal</button>
@@ -131,15 +149,15 @@
     <div id="modal-sched" class="modal-overlay">
         <div class="bg-white w-full max-w-xs rounded-[32px] p-8 shadow-2xl">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="font-bold text-slate-800" id="m-title">Jadwal</h3>
+                <h3 class="font-bold text-slate-800" id="m-title">Penjadwalan</h3>
                 <button onclick="closeModal('modal-sched')" class="text-slate-300"><i class="fas fa-times-circle text-2xl"></i></button>
             </div>
             <input type="time" id="s-time" class="w-full p-4 bg-slate-50 rounded-2xl border-none text-3xl font-bold text-blue-600 text-center mb-6">
-            <div class="flex gap-2 mb-8">
-                <button onclick="setAct(1)" id="b-on" class="flex-1 py-4 rounded-2xl border-2 border-blue-600 text-blue-600 font-bold text-xs">NYALA</button>
-                <button onclick="setAct(0)" id="b-off" class="flex-1 py-4 rounded-2xl bg-slate-100 text-slate-400 font-bold text-xs">MATI</button>
+            <div class="flex gap-2 mb-8 p-1 bg-slate-100 rounded-2xl">
+                <button onclick="setAct(1)" id="b-on" class="flex-1 py-4 rounded-xl font-bold text-xs transition-all">NYALA</button>
+                <button onclick="setAct(0)" id="b-off" class="flex-1 py-4 rounded-xl font-bold text-xs transition-all">MATI</button>
             </div>
-            <button onclick="addSchedule()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-lg">Aktifkan Jadwal</button>
+            <button onclick="addSchedule()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-lg">Simpan Jadwal</button>
             <div id="m-list" class="mt-6 space-y-2 max-h-40 overflow-y-auto"></div>
         </div>
     </div>
@@ -148,8 +166,8 @@
         let blynkToken = "qS2dyzw-3-Iy8HZEcRQKO8epbb0AbEl8";
         const apiKey = ""; 
 
-        // Load names from storage or defaults
-        let devices = JSON.parse(localStorage.getItem('nexhome_devices')) || [
+        // Initial Data
+        let devices = JSON.parse(localStorage.getItem('nexhome_devices_v5')) || [
             { id: 0, vPin: "V2", name: "Lampu Teras", icon: "fa-lightbulb", state: 0 },
             { id: 1, vPin: "V3", name: "Lampu Tengah", icon: "fa-couch", state: 0 },
             { id: 2, vPin: "V4", name: "Lampu Kamar", icon: "fa-bed", state: 0 },
@@ -157,38 +175,40 @@
             { id: 4, vPin: "V6", name: "Lampu Dapur", icon: "fa-utensils", state: 0 },
             { id: 5, vPin: "V7", name: "Lampu WC", icon: "fa-toilet", state: 0 },
             { id: 6, vPin: "V8", name: "Pompa Air", icon: "fa-faucet", state: 0 },
-            { id: 7, vPin: "V9", name: "AC", icon: "fa-snowflake", state: 0 }
+            { id: 7, vPin: "V9", name: "AC Rumah", icon: "fa-snowflake", state: 0 }
         ];
 
         let schedules = [];
         let selectedId = null;
         let selectedAct = 1;
-        
-        // Touch Variables
         let startX, startY, isMoving = false;
         let lpTimer;
 
-        // --- UI CORE ---
+        // --- NAVIGATION ---
         function toggleTab(tab) {
-            ['home', 'ai', 'settings'].forEach(t => {
-                document.getElementById('view-' + t).classList.toggle('hidden', t !== tab);
+            ['ai', 'home', 'settings'].forEach(t => {
+                const view = document.getElementById('view-' + t);
+                if(view) view.classList.toggle('hidden', t !== tab);
+                
                 const btn = document.getElementById('btn-' + t);
                 if(btn) {
                     btn.className = t === tab ? 
-                        'flex-1 py-2.5 text-[11px] font-bold rounded-xl bg-white shadow-sm text-blue-600' : 
-                        'flex-1 py-2.5 text-[11px] font-bold rounded-xl text-slate-500';
+                        'flex-1 py-3 text-[11px] font-bold rounded-xl bg-white shadow-sm text-blue-600' : 
+                        'flex-1 py-3 text-[11px] font-bold rounded-xl text-slate-400';
                 }
             });
+            if(tab === 'home') render();
         }
 
+        // --- RENDER HOME ---
         function render() {
             const container = document.getElementById('view-home');
             container.innerHTML = '';
             devices.forEach(d => {
                 const card = document.createElement('div');
-                card.className = `device-card relative p-6 h-48 flex flex-col justify-between ${d.state ? 'active' : 'bg-white border border-slate-100 text-slate-400 shadow-sm'}`;
+                card.className = `device-card p-6 h-48 flex flex-col justify-between ${d.state ? 'active' : 'bg-white border border-slate-100 text-slate-400 shadow-sm'}`;
                 
-                // Card touch events
+                // Touch events for single click vs long press
                 card.onmousedown = card.ontouchstart = (e) => handleStart(e, d.id);
                 card.onmousemove = card.ontouchmove = (e) => handleMove(e);
                 card.onmouseup = card.ontouchend = (e) => handleEnd(e, d);
@@ -198,13 +218,13 @@
                         <div class="w-12 h-12 rounded-2xl flex items-center justify-center ${d.state ? 'bg-white/20' : 'bg-slate-50'}">
                             <i class="fas ${d.icon} text-xl"></i>
                         </div>
-                        <button onclick="openRename(${d.id}); event.stopPropagation();" class="w-8 h-8 rounded-full flex items-center justify-center ${d.state ? 'text-white/40' : 'text-slate-300'} hover:bg-slate-100">
-                            <i class="fas fa-pen text-[10px]"></i>
+                        <button onclick="openRename(${d.id}); event.stopPropagation();" class="w-8 h-8 rounded-full flex items-center justify-center ${d.state ? 'text-white/40' : 'text-slate-300'}">
+                            <i class="fas fa-edit text-[10px]"></i>
                         </button>
                     </div>
                     <div>
                         <p class="font-bold text-sm truncate leading-tight">${d.name}</p>
-                        <p class="text-[9px] font-bold uppercase tracking-widest mt-1.5 opacity-60">${d.vPin} • ${d.state ? 'Nyala' : 'Mati'}</p>
+                        <p class="text-[9px] font-bold uppercase tracking-widest mt-1.5 opacity-60">${d.vPin} • ${d.state ? 'Aktif' : 'Mati'}</p>
                     </div>
                     <div class="long-press-indicator" id="lp-${d.id}"></div>
                 `;
@@ -212,7 +232,7 @@
             });
         }
 
-        // --- TOUCH LOGIC (Anti Scroll Trigger) ---
+        // --- TOUCH LOGIC (Anti-Scroll) ---
         function handleStart(e, id) {
             const touch = e.touches ? e.touches[0] : e;
             startX = touch.clientX;
@@ -222,7 +242,7 @@
             const indicator = document.getElementById(`lp-${id}`);
             let prog = 0;
             lpTimer = setInterval(() => {
-                prog += 3;
+                prog += 4;
                 if(indicator) indicator.style.width = prog + '%';
                 if(prog >= 100) {
                     clearInterval(lpTimer);
@@ -233,9 +253,7 @@
 
         function handleMove(e) {
             const touch = e.touches ? e.touches[0] : e;
-            const dx = Math.abs(touch.clientX - startX);
-            const dy = Math.abs(touch.clientY - startY);
-            if(dx > 15 || dy > 15) {
+            if(Math.abs(touch.clientX - startX) > 10 || Math.abs(touch.clientY - startY) > 10) {
                 isMoving = true;
                 clearInterval(lpTimer);
                 resetIndicators();
@@ -244,9 +262,9 @@
 
         function handleEnd(e, dev) {
             clearInterval(lpTimer);
-            const prog = document.getElementById(`lp-${dev.id}`)?.style.width || '0%';
+            const prog = parseInt(document.getElementById(`lp-${dev.id}`)?.style.width || '0');
             resetIndicators();
-            if(!isMoving && parseInt(prog) < 100) {
+            if(!isMoving && prog < 100) {
                 toggleDevice(dev);
             }
         }
@@ -258,7 +276,7 @@
             });
         }
 
-        // --- BLYNK SYNC ---
+        // --- BLYNK KONTROL ---
         async function toggleDevice(dev) {
             const newVal = dev.state ? 0 : 1;
             try {
@@ -270,24 +288,21 @@
 
         async function syncServer() {
             try {
-                const res = await fetch(`https://blynk.cloud/external/api/get?token=${blynkToken}&V2&V3&V4&V5&V6&V7&V8&V9`);
+                const pins = devices.map(d => d.vPin).join('&');
+                const res = await fetch(`https://blynk.cloud/external/api/get?token=${blynkToken}&${pins}`);
                 if(res.ok) {
                     const status = await res.json();
-                    let updated = false;
                     devices.forEach(d => {
-                        const s = status[d.vPin];
-                        if(s !== undefined && d.state !== parseInt(s)) {
-                            d.state = parseInt(s);
-                            updated = true;
-                        }
+                        if(status[d.vPin] !== undefined) d.state = parseInt(status[d.vPin]);
                     });
-                    if(updated) render();
-                    document.getElementById('status-dot').className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]";
+                    render();
+                    document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]";
                     document.getElementById('status-text').innerText = "ONLINE";
-                    document.getElementById('status-text').className = "text-[10px] font-bold text-green-600 uppercase tracking-widest";
+                    document.getElementById('status-text').className = "text-[9px] font-bold text-green-600 uppercase tracking-widest";
                 }
             } catch(e) {
-                document.getElementById('status-dot').className = "w-2.5 h-2.5 rounded-full bg-red-500";
+                document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-red-500";
+                document.getElementById('status-text').innerText = "OFFLINE";
             }
         }
 
@@ -301,56 +316,16 @@
         }
 
         function confirmRename() {
-            const newName = document.getElementById('rename-input').value.trim();
-            if(newName) {
-                devices = devices.map(d => d.id === selectedId ? {...d, name: newName} : d);
-                localStorage.setItem('nexhome_devices', JSON.stringify(devices));
+            const val = document.getElementById('rename-input').value.trim();
+            if(val) {
+                devices = devices.map(d => d.id === selectedId ? {...d, name: val} : d);
+                localStorage.setItem('nexhome_devices_v5', JSON.stringify(devices));
                 render();
                 closeModal('modal-rename');
             }
         }
 
-        // --- SCHEDULER ---
-        function openSched(id) {
-            selectedId = id;
-            const dev = devices.find(d => d.id === id);
-            document.getElementById('m-title').innerText = dev.name;
-            document.getElementById('modal-sched').style.display = 'flex';
-            renderSchedList();
-        }
-
-        function closeModal(mId) { document.getElementById(mId).style.display = 'none'; }
-        
-        function setAct(a) {
-            selectedAct = a;
-            document.getElementById('b-on').className = a ? "flex-1 py-4 rounded-2xl border-2 border-blue-600 text-blue-600 font-bold text-xs" : "flex-1 py-4 rounded-2xl bg-slate-100 text-slate-400 font-bold text-xs";
-            document.getElementById('b-off').className = !a ? "flex-1 py-4 rounded-2xl border-2 border-red-500 text-red-500 font-bold text-xs" : "flex-1 py-4 rounded-2xl bg-slate-100 text-slate-400 font-bold text-xs";
-        }
-
-        function addSchedule() {
-            const time = document.getElementById('s-time').value;
-            if(!time) return;
-            schedules.push({ id: Date.now(), devId: selectedId, time, act: selectedAct });
-            renderSchedList();
-        }
-
-        function renderSchedList() {
-            const list = document.getElementById('m-list');
-            list.innerHTML = '';
-            schedules.filter(s => s.devId === selectedId).forEach(s => {
-                const d = document.createElement('div');
-                d.className = "flex justify-between items-center p-4 bg-slate-50 rounded-2xl text-[11px] font-bold";
-                d.innerHTML = `<span>${s.time} • ${s.act ? 'NYALA' : 'MATI'}</span><i class="fas fa-trash-alt text-red-400" onclick="delSched(${s.id})"></i>`;
-                list.appendChild(d);
-            });
-        }
-
-        function delSched(id) {
-            schedules = schedules.filter(s => s.id !== id);
-            renderSchedList();
-        }
-
-        // --- AI ENGINE (Ultra-Fix JSON Parser) ---
+        // --- AI ENGINE ---
         async function askAI() {
             const input = document.getElementById('ai-input');
             const query = input.value.trim();
@@ -361,9 +336,9 @@
 
             const systemPrompt = `
                 Kamu NexHome Elite AI. 
-                Perangkat: ${devices.map(d => `${d.name} (${d.vPin})`).join(', ')}.
-                Format Kontrol (WAJIB): [{"pin": "VPIN", "val": 0/1}]
-                Tanggapi dengan ramah tapi singkat.
+                Daftar Saklar: ${devices.map(d => `${d.name} (${d.vPin})`).join(', ')}.
+                Jika disuruh kontrol, balas dengan JSON di dalam teks: [{"pin": "VPIN", "val": 0/1}].
+                Contoh: Baik, lampu teras dimatikan. [{"pin": "V2", "val": 0}]
             `;
 
             try {
@@ -379,43 +354,75 @@
                 const data = await response.json();
                 const aiText = data.candidates[0].content.parts[0].text;
 
-                // SMART PARSER: Cari JSON dimanapun, bahkan di dalam blok kode ```
-                const jsonPattern = /\[\s*{.*?}\s*\]/gs;
-                const matches = aiText.match(jsonPattern);
-
-                if(matches) {
-                    try {
-                        const lastJson = matches[matches.length - 1]; // Ambil JSON terakhir yang ditemukan
-                        const cmds = JSON.parse(lastJson);
-                        if(Array.isArray(cmds)) {
-                            for(let cmd of cmds) {
-                                const dev = devices.find(d => d.vPin === cmd.pin);
-                                if(dev) {
-                                    await fetch(`https://blynk.cloud/external/api/update?token=${blynkToken}&${cmd.pin}=${cmd.val}`, { mode: 'no-cors' });
-                                    dev.state = cmd.val;
-                                }
-                            }
-                            render();
+                // Robust JSON Parsing
+                const jsonMatch = aiText.match(/\[\s*{.*?}\s*\]/gs);
+                if(jsonMatch) {
+                    const cmds = JSON.parse(jsonMatch[0]);
+                    for(let cmd of cmds) {
+                        const dev = devices.find(d => d.vPin === cmd.pin);
+                        if(dev) {
+                            await fetch(`https://blynk.cloud/external/api/update?token=${blynkToken}&${cmd.pin}=${cmd.val}`, { mode: 'no-cors' });
+                            dev.state = cmd.val;
                         }
-                    } catch(e) { console.error("Gagal parse perintah AI"); }
+                    }
+                    render();
                 }
 
-                // Bersihkan teks dari blok JSON untuk tampilan chat
-                const cleanText = aiText.replace(/```json.*?```/gs, '').replace(/\[\s*{.*?}\s*\]/gs, '').trim();
-                addChat('ai', cleanText || "Perintah dijalankan, Masdar.");
-                speak(cleanText || "Siap, perintah dijalankan.");
+                const cleanResponse = aiText.replace(/\[\s*{.*?}\s*\]/gs, '').replace(/```.*?```/gs, '').trim();
+                addChat('ai', cleanResponse || "Selesai, Masdar.");
+                speak(cleanResponse);
             } catch(e) {
-                addChat('ai', "Koneksi AI terganggu. Silakan coba lagi.");
+                addChat('ai', "Maaf, koneksi sedang bermasalah.");
             }
         }
 
         function addChat(role, text) {
             const box = document.getElementById('chat-box');
             const div = document.createElement('div');
-            div.className = role === 'user' ? 'chat-bubble-user p-5 text-sm self-end ml-auto max-w-[85%] shadow-xl shadow-blue-100' : 'chat-bubble-ai p-5 text-sm max-w-[85%] shadow-sm';
+            div.className = role === 'user' ? 'chat-bubble-user p-5 text-sm self-end ml-auto max-w-[85%] shadow-lg' : 'chat-bubble-ai p-5 text-sm max-w-[85%] shadow-sm';
             div.innerText = text;
             box.appendChild(div);
             box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+        }
+
+        // --- SCHEDULER & OTHERS ---
+        function openSched(id) {
+            selectedId = id;
+            document.getElementById('m-title').innerText = devices.find(d => d.id === id).name;
+            document.getElementById('modal-sched').style.display = 'flex';
+            setAct(1);
+            renderSchedList();
+        }
+
+        function closeModal(mId) { document.getElementById(mId).style.display = 'none'; }
+        
+        function setAct(a) {
+            selectedAct = a;
+            document.getElementById('b-on').className = a ? "flex-1 py-4 rounded-xl bg-blue-600 text-white font-bold text-xs" : "flex-1 py-4 rounded-xl bg-white text-slate-400 font-bold text-xs";
+            document.getElementById('b-off').className = !a ? "flex-1 py-4 rounded-xl bg-red-500 text-white font-bold text-xs" : "flex-1 py-4 rounded-xl bg-white text-slate-400 font-bold text-xs";
+        }
+
+        function addSchedule() {
+            const time = document.getElementById('s-time').value;
+            if(!time) return;
+            schedules.push({ id: Date.now(), devId: selectedId, time, act: selectedAct });
+            renderSchedList();
+        }
+
+        function renderSchedList() {
+            const list = document.getElementById('m-list');
+            list.innerHTML = '';
+            schedules.filter(s => s.devId === selectedId).forEach(s => {
+                const d = document.createElement('div');
+                d.className = "flex justify-between items-center p-4 bg-slate-50 rounded-2xl text-[11px] font-bold";
+                d.innerHTML = `<span>${s.time} • ${s.act ? 'NYALA' : 'MATI'}</span><i class="fas fa-trash text-red-400" onclick="delSched(${s.id})"></i>`;
+                list.appendChild(d);
+            });
+        }
+
+        function delSched(id) {
+            schedules = schedules.filter(s => s.id !== id);
+            renderSchedList();
         }
 
         async function speak(text) {
@@ -453,26 +460,26 @@
 
         function saveSettings() {
             blynkToken = document.getElementById('cfg-token').value;
-            toggleTab('home');
+            toggleTab('ai');
             syncServer();
         }
 
-        // Sched Checker
-        setInterval(() => {
-            const now = new Date();
-            const time = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-            schedules.forEach(s => {
-                if(s.time === time && now.getSeconds() === 0) {
-                    const dev = devices.find(d => d.id === s.devId);
-                    if(dev && dev.state !== s.act) toggleDevice(dev);
-                }
-            });
-        }, 1000);
-
         window.onload = () => {
-            render();
+            toggleTab('ai'); // Membuka AI saat pertama kali masuk
             syncServer();
-            setInterval(syncServer, 3000);
+            setInterval(syncServer, 5000);
+            
+            // Background Sched Checker
+            setInterval(() => {
+                const now = new Date();
+                const time = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+                schedules.forEach(s => {
+                    if(s.time === time && now.getSeconds() === 0) {
+                        const dev = devices.find(d => d.id === s.devId);
+                        if(dev && dev.state !== s.act) toggleDevice(dev);
+                    }
+                });
+            }, 1000);
         };
     </script>
 </body>
